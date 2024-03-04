@@ -33,7 +33,7 @@
 		"preview": "vite preview"
 	},
 	"peerDependencies": {
-		"query-string": "^8.2.0",
+        "@vueuse/core": "^10.0.0",
 		"@inertiajs/vue3": "^1.0.0",
 		"axios": "^1.2.0",
 		"vue": "^3.x"
