@@ -5,11 +5,11 @@ export default defineConfig({
 	build: {
 		lib: {
 			entry: resolve(__dirname, "src/index.ts"),
-			name: "Surge Vanguard",
-			fileName: `surge-vanguard`,
+			name: "Vanguard",
+			fileName: `vanguard`,
 		},
 		rollupOptions: {
-			external: ["vue", "@inertiajs/vue3", "axios"],
+			external: ["vue", "@inertiajs/vue3", "query-string"],
 		},
 	},
 })

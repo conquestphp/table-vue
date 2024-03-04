@@ -1,5 +1,5 @@
 {
-	"name": "surge-vanguard-client",
+	"name": "vanguard-client",
 	"version": "0.1.0",
 	"description": "A Vue 3 + Inertia plugin composable for handler tables and refiners.",
 	"keywords": [
@@ -11,19 +11,19 @@
 	"author": "Joshua Wallace",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jdw5/surge-vanguard-client.git"
+		"url": "https://github.com/jdw5/vanguard-client.git"
 	},
 	"type": "module",
-	"main": "./dist/surge-vanguard.umd.cjs",
-	"module": "./dist/surge-vanguard.js",
+	"main": "./dist/vanguard.umd.cjs",
+	"module": "./dist/vanguard.js",
 	"types": "./dist/types/index.d.ts",
 	"exports": {
 		".": {
-			"import": "./dist/surge-vanguard.js",
-			"require": "./dist/surge-vanguard.umd.cjs"
+			"import": "./dist/vanguard.js",
+			"require": "./dist/vanguard.umd.cjs"
 		}
 	},
-	"homepage": "https://github.com/jdw5/surge-vanguard-client#readme",
+	"homepage": "https://github.com/jdw5/vanguard-client#readme",
 	"files": [
 		"dist"
 	],
