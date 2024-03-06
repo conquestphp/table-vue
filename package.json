@@ -1,6 +1,6 @@
 {
 	"name": "vanguard-client",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "A Vue 3 + Inertia plugin composable for handler tables and refiners.",
 	"keywords": [
 		"laravel",
@@ -14,13 +14,13 @@
 		"url": "https://github.com/jdw5/vanguard-client.git"
 	},
 	"type": "module",
-	"main": "./dist/vanguard.umd.cjs",
-	"module": "./dist/vanguard.js",
+	"main": "./dist/vanguard-client.umd.cjs",
+	"module": "./dist/vanguard-client.js",
 	"types": "./dist/types/index.d.ts",
 	"exports": {
 		".": {
-			"import": "./dist/vanguard.js",
-			"require": "./dist/vanguard.umd.cjs"
+			"import": "./dist/vanguard-client.js",
+			"require": "./dist/vanguard-client.umd.cjs"
 		}
 	},
 	"homepage": "https://github.com/jdw5/vanguard-client#readme",
