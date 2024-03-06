@@ -9,7 +9,7 @@ export default defineConfig({
 			fileName: `vanguard`,
 		},
 		rollupOptions: {
-			external: ["vue", "@inertiajs/vue3", "@vueuse/core"],
+			external: ["vue", "@inertiajs/vue3", "@vueuse/core", "query-string"],
 		},
 	},
 })

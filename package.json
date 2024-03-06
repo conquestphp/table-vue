@@ -1,12 +1,12 @@
 {
 	"name": "vanguard-client",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"description": "A Vue 3 + Inertia plugin composable for handler tables and refiners.",
 	"keywords": [
 		"laravel",
 		"inertia",
 		"vue",
-		"toast"
+		"vanguard"
 	],
 	"author": "Joshua Wallace",
 	"repository": {
@@ -29,7 +29,7 @@
 	],
 	"scripts": {
 		"dev": "vite",
-		"build": "vue-tsc && vite build",
+		"build": "vite build",
 		"preview": "vite preview"
 	},
 	"peerDependencies": {

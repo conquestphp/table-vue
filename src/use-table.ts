@@ -1,4 +1,4 @@
-import type { RefinementOptions, UseTableProps, PageAction, Column } from "./types";
+import type { RefinementOptions, UseTableProps, Column } from "./types";
 import { useRefinements } from "./use-refinements";
 import { useBulkSelect } from "./use-bulk";
 import { reactive, toRef, computed } from "vue";
