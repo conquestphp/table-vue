@@ -27,11 +27,21 @@ export const useTable = (propName: string, refinementOptions: RefinementOptions)
         /** 
          * List of columns for the table 
          */
-        cols: computed(() => table.value.cols.map((col: Column) => ({
-            ...col,
-            sort: () => col.has_sort ? refinements.loopSort(col.sort_field, col.next_direction) : null,
-            clear: () => refinements.clearSort(),
-        }))),
+        rawCols: table.value.cols,
+        cols: computed(() => {
+            return table.value.cols.reduce((acc, col) => {
+                if (!col.hidden) { // Filter condition
+                    const newCol = {
+                        ...col,
+                        sort: col.has_sort ? () => refinements.loopSort(col.sort_field, col.next_direction) : null,
+                        clear: () => refinements.clearSort()
+                    };
+                    acc.push(newCol); // Map operation
+                }
+                return acc;
+            }, []);
+        }),
+        
         /**
          * List of rows for the table 
          */
