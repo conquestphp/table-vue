@@ -1,3 +1,5 @@
+import { ComputedRef } from "vue";
+
 interface Meta {
     empty: boolean;
     show: boolean;
@@ -13,16 +15,32 @@ export interface UseRefinement {
     clearQuery: () => void;
 }
 
+export interface ActionablePageAction extends PageAction {
+    execute: () => void;
+}
+
 export interface UseTable {
-    rows: any[];
-    cols: Column[];
-    meta: PaginatedMeta | CursorPaginatedMeta | UnpaginatedMeta;
-    refinements: UseRefinement;
+    rawCols: Column[]
+    cols: ActionableColumn[];
+    rows: ActionableRow[];
+    meta: ComputedRef<PaginatedMeta|CursorPaginatedMeta|UnpaginatedMeta>;
+    refinements: Refinements;
     actions: {
-        row: Action[];
-        bulk: Action[];
-        default?: Action;
-    }
+        inline: ComputedRef<InlineAction[]>;
+        page: ComputedRef<ActionablePageAction[]>;
+        bulk: ComputedRef<BulkAction[]>;
+        default?: InlineAction;
+    },
+    selectAll: () => void;
+    deselectAll: () => void;
+    isSelected: (row: string) => boolean;
+    allSelected: () => boolean;
+    selection: ComputedRef<string[]>;
+    toggle: (row: string) => void;
+    select: (row: string) => void;
+    deselect: (row: string) => void;
+    recordKey: string;
+    show?: number
 }
 
 export interface RefinementOptions {
@@ -64,15 +82,24 @@ export interface PaginatedMeta extends Meta {
 
 export interface Column {
     name: string;
-    label: string;
     type: string;
+    label: string;
     metadata?: any
+    fallback?: string;
+
     has_sort: boolean;
     active?: boolean;
     direction?: string;
     next_direction?: string;
-    fallback?: string;
-    sort_field?: string
+    sort_field: string
+
+    hidden?: boolean;
+    breakpoint?: string|null;
+    sr_only?: boolean;
+
+    dynamic?: boolean;
+    dynamic_active?: boolean
+    
 }
 
 export interface Refinement {
@@ -107,12 +134,12 @@ export interface Action {
     name: string;
     label: string;
     metadata?: any;
-    hidden: boolean;
+
+
 }
 
 export interface BulkAction extends Action { }
 export interface InlineAction extends Action { }
-
 export interface Actionndpoint {
     method: string
     route: string
@@ -120,7 +147,7 @@ export interface Actionndpoint {
 
 export interface PageAction extends Extend {
     has_endpoint: boolean;
-    endpoint: ActionEndpoint|null
+    endpoint?: ActionEndpoint|null
 }
 
 export interface Refinements {
@@ -128,10 +155,23 @@ export interface Refinements {
     sorts?: Sort[];
 }
 
+export interface ActionableColumn extends Column {
+    sort: () => void;
+    clear: () => void;
+}
+
+export interface ActionableRow extends Extend {
+    key: string;
+    select: () => void;
+    deselect: () => void;
+    toggle: () => void;
+    isSelected: ComputedRef<boolean>;
+}
+
 export interface UseTableProps {
     recordKey: string;
-    rows: any[];
     cols: Column[];
+    rows: Row[];
     meta: PaginatedMeta | CursorPaginatedMeta | UnpaginatedMeta;
     refinements: Refinements;
     actions: {
@@ -140,4 +180,6 @@ export interface UseTableProps {
         bulk: BulkAction[];
         default?: InlineAction;
     }
+    show?: number
+
 }

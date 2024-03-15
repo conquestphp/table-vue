@@ -52,7 +52,6 @@ export const useTable = (propName: string, refinementOptions: RefinementOptions)
             deselect: () => bulk.deselect(getRowKey(row)),
             toggle: () => bulk.toggle(getRowKey(row)),
             isSelected: computed(() => {
-                console.log('Execute')
                 return bulk.selected(getRowKey(row))
             }),
             // execute: ()
