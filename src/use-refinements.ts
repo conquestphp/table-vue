@@ -1,21 +1,21 @@
-import type { Refiners, Sort, Filter, ActionableFilter, ActionableSort, RefinementOptions, UseRefinement } from "./types";
+import type { Refiners, Sort, Filter, ActionableFilter, ActionableSort, RefinementOptions } from "./types";
 import queryString from "query-string"
-import { reactive, computed, onMounted, nextTick } from "vue";
+import { toRef, reactive, computed, onMounted, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
 import { watchPausable } from "@vueuse/core"
-import { getPageProps, emptyValue } from "./utils";
+import { emptyValue } from "./utils";
 
 const SORT_FIELD = 'sort';
 const ORDER_FIELD = 'order';
 
-export const useRefinements = (propName: string, options: RefinementOptions = {}) => {
+export const useRefinements = (props: Refiners, options: RefinementOptions = {}) => {
     const { 
         watch = true, 
         transforms = {} 
     } = options
 
-    // const props = computed(() => getPageProps(propName) as Refiners)
-    // const props =    
+    const refiners = toRef(props)
+   
     const params = reactive({})
 
     const transformParams = () => {
@@ -47,7 +47,6 @@ export const useRefinements = (propName: string, options: RefinementOptions = {}
         )
 
         router.visit(url, {
-            // only: [propName],
             preserveScroll: true,
             preserveState: true,
         })
@@ -55,7 +54,7 @@ export const useRefinements = (propName: string, options: RefinementOptions = {}
 
     const { pause, resume } = watchPausable(params, update)
     
-    const sorts = computed(() => props.value.sorts.map((sort: Sort): ActionableSort => {
+    const sorts = computed(() => refiners.value.sorts.map((sort: Sort): ActionableSort => {
         return {
             ...sort,
             action: () => {
@@ -67,7 +66,7 @@ export const useRefinements = (propName: string, options: RefinementOptions = {}
         }
     }))
 
-    const filters = computed(() => props.value.filters.map((filter: Filter): ActionableFilter => {
+    const filters = computed(() => refiners.value.filters.map((filter: Filter): ActionableFilter => {
         return {
             ...filter,
             action: (value: any) => {
