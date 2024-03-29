@@ -2,8 +2,12 @@ import { ComputedRef } from "vue";
 
 /** Interface for the Refiners class */
 export interface Refiners {
-    sorts: Sort[];
-    filters: Filter[];
+    sorts: {
+        [key: string]: Sort
+    }
+    filters: {
+        [key: string]: Filter
+    }
 }
 
 export interface Option {
@@ -22,7 +26,7 @@ export interface Refinement {
 }
 
 /** Filters */
-interface BaseFilter extends Refinement {
+export interface BaseFilter extends Refinement {
     value: any;
     options: Option[]
 }
@@ -30,7 +34,7 @@ interface BaseFilter extends Refinement {
 export interface Filter extends BaseFilter { }
 
 /** Sorts */
-interface BaseSort extends Refinement { }
+export interface BaseSort extends Refinement { }
 
 export interface Sort extends BaseSort {
     direction: string;
@@ -157,58 +161,8 @@ export interface Table {
 }
 
 /** Javascript API */
-export interface UseTableProps {
-    recordKey: string;
-    cols: Column[];
-    rows: Row[];
-    meta: PaginatedMeta | CursorPaginatedMeta | UnpaginatedMeta;
-    refinements: Refiners;
-    actions: {
-        inline: InlineAction[];
-        page: PageAction[];
-        bulk: BulkAction[];
-        default?: InlineAction;
-    }
-    show?: number
-}
-
-
-export interface UseRefinement {
-    params: any;
-    sorts: ActionableSort[];
-    filters: ActionableFilter[];
-    setQuery: (fieldQuery: string, value: any) => void;
-    updateQuery: () => void;
-    getQuery: () => any;
-    clearQuery: () => void;
-}
-
 export interface ActionablePageAction extends PageAction {
     execute: () => void;
-}
-
-export interface UseTable {
-    rawCols: Column[]
-    cols: ActionableColumn[];
-    rows: ActionableRow[];
-    meta: ComputedRef<PaginatedMeta|CursorPaginatedMeta|UnpaginatedMeta>;
-    refinements: Refinements;
-    actions: {
-        inline: ComputedRef<InlineAction[]>;
-        page: ComputedRef<ActionablePageAction[]>;
-        bulk: ComputedRef<BulkAction[]>;
-        default?: InlineAction;
-    },
-    selectAll: () => void;
-    deselectAll: () => void;
-    isSelected: (row: string) => boolean;
-    allSelected: () => boolean;
-    selection: ComputedRef<string[]>;
-    toggle: (row: string) => void;
-    select: (row: string) => void;
-    deselect: (row: string) => void;
-    recordKey: string;
-    show?: number
 }
 
 export interface RefinementOptions {
@@ -243,3 +197,60 @@ export interface ActionableRow extends Extend {
     isSelected: ComputedRef<boolean>;
 }
 
+export interface UseTable {
+    rawCols: Column[]
+    cols: ActionableColumn[];
+    rows: ActionableRow[];
+    meta: ComputedRef<PaginatedMeta|CursorPaginatedMeta|UnpaginatedMeta>;
+    refinements: Refinements;
+    actions: {
+        inline: ComputedRef<InlineAction[]>;
+        page: ComputedRef<ActionablePageAction[]>;
+        bulk: ComputedRef<BulkAction[]>;
+        default?: InlineAction;
+    },
+    selectAll: () => void;
+    deselectAll: () => void;
+    isSelected: (row: string) => boolean;
+    allSelected: () => boolean;
+    selection: ComputedRef<string[]>;
+    toggle: (row: string) => void;
+    select: (row: string) => void;
+    deselect: (row: string) => void;
+    recordKey: string;
+    show?: number
+}
+
+export interface UseTableProps {
+    recordKey: string;
+    cols: Column[];
+    rows: Row[];
+    meta: PaginatedMeta | CursorPaginatedMeta | UnpaginatedMeta;
+    refinements: Refiners;
+    actions: {
+        inline: InlineAction[];
+        page: PageAction[];
+        bulk: BulkAction[];
+        default?: InlineAction;
+    }
+    show?: number
+}
+
+
+export interface UseRefinement {
+    params: any;
+    sorts: ActionableSort[];
+    filters: ActionableFilter[];
+    setQuery: (fieldQuery: string, value: any) => void;
+    updateQuery: () => void;
+    getQuery: () => any;
+    clearQuery: () => void;
+}
+
+/** Misc */
+
+interface RouterOptions {
+    onSuccess?: () => void;
+    onError?: () => void;
+    onFinish?: () => void;
+}

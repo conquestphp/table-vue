@@ -3,7 +3,7 @@ import { useRefinements } from "./use-refinements";
 import { useBulkSelect } from "./use-bulk";
 import { reactive, toRef, computed } from "vue";
 import { getPageProps } from "./utils";
-import { router } from "@inertiajs/vue3";
+import { useActions } from "./use-actions";
 
 type RowIdentifier = string | number;
 
@@ -64,31 +64,32 @@ export const useTable = (propName: string, refinementOptions: RefinementOptions)
 		/** 
          * List of inline actions for this table. 
          */
-        inlineActions: computed(() => table.value.actions.inline.map((action) => ({
-            ...action
-        }))),
-		/** 
-         * List of bulk actions for this table. 
-         */
-        bulkActions: computed(() => table.value.actions.bulk.map((action) => ({
-            ...action,
-            // execute: () => executeBulkAction()
-        }))),
-		/** 
-         * List of page actions for this table. 
-         */
-        pageActions: computed(() => table.value.actions.page.map((action) => ({
-            ...action,
-            execute: (data: object, options?: object) => {
-                if (! action.has_endpoint) return 
+        // inlineActions: computed(() => table.value.actions.inline.map((action) => ({
+        //     ...action
+        // }))),
+		// /** 
+        //  * List of bulk actions for this table. 
+        //  */
+        // bulkActions: computed(() => table.value.actions.bulk.map((action) => ({
+        //     ...action,
+        //     // execute: () => executeBulkAction()
+        // }))),
+		// /** 
+        //  * List of page actions for this table. 
+        //  */
+        // pageActions: computed(() => table.value.actions.page.map((action) => ({
+        //     ...action,
+        //     execute: (data: object, options?: object) => {
+        //         if (! action.has_endpoint) return 
 
-                router[action.endpoint.method](action.endpoint.route, {
-                    ...data,
-                },{
-                    ...options
-                })
-            }
-        }))),
+        //         router[action.endpoint.method](action.endpoint.route, {
+        //             ...data,
+        //         },{
+        //             ...options
+        //         })
+        //     }
+        // }))),
+        actions: useActions(table.value.actions),
 		/** 
          * Selects all records. 
          */

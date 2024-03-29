@@ -1,6 +1,6 @@
-import type { Refinements, Sort, Filter, ActionableFilter, ActionableSort, RefinementOptions, UseRefinement } from "./types";
+import type { Refiners, Sort, Filter, ActionableFilter, ActionableSort, RefinementOptions, UseRefinement } from "./types";
 import queryString from "query-string"
-import { ref, reactive, computed, onMounted, nextTick } from "vue";
+import { reactive, computed, onMounted, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
 import { watchPausable } from "@vueuse/core"
 import { getPageProps, emptyValue } from "./utils";
@@ -14,7 +14,8 @@ export const useRefinements = (propName: string, options: RefinementOptions = {}
         transforms = {} 
     } = options
 
-    const props = computed(() => getPageProps(propName) as Refinements)       
+    // const props = computed(() => getPageProps(propName) as Refiners)
+    // const props =    
     const params = reactive({})
 
     const transformParams = () => {
