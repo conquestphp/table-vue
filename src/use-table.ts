@@ -1,4 +1,4 @@
-import type { RefinementOptions, UseTableProps, Column } from "./types";
+import type { RefinementOptions, UseTableProps, Column, ActionableColumn } from "./types";
 import { useRefinements } from "./use-refinements";
 import { useBulkSelect } from "./use-bulk";
 import { reactive, toRef, computed } from "vue";
@@ -27,21 +27,19 @@ export const useTable = (propName: string, refinementOptions: RefinementOptions)
         /** 
          * List of columns for the table 
          */
-        rawCols: table.value.cols,
         cols: computed(() => {
-            return table.value.cols.reduce((acc, col) => {
+            return table.value.cols.reduce((acc: ActionableColumn[], col: Column) => {
                 if (!col.hidden) { // Filter condition
-                    const newCol = {
+                    const newCol: ActionableColumn = {
                         ...col,
-                        sort: col.has_sort ? () => refinements.loopSort(col.sort_field, col.next_direction) : null,
+                        sort: col.has_sort ? () => refinements.loopSort(col.sort_field, col.next_direction) : () => {},
                         clear: () => refinements.clearSort()
                     };
-                    acc.push(newCol); // Map operation
+                    acc.push(newCol);
                 }
                 return acc;
             }, []);
         }),
-        
         /**
          * List of rows for the table 
          */
@@ -51,44 +49,15 @@ export const useTable = (propName: string, refinementOptions: RefinementOptions)
             select: () => bulk.select(getRowKey(row)),
             deselect: () => bulk.deselect(getRowKey(row)),
             toggle: () => bulk.toggle(getRowKey(row)),
-            isSelected: computed(() => {
-                return bulk.selected(getRowKey(row))
-            }),
-            // execute: ()
-            // actions
+            isSelected: computed(() => bulk.selected(getRowKey(row))),
         }))),
         /** 
          * Pagination data for the table 
          */
         meta: computed(() => table.value.meta),
-		/** 
-         * List of inline actions for this table. 
+        /**
+         * Actions for the table
          */
-        // inlineActions: computed(() => table.value.actions.inline.map((action) => ({
-        //     ...action
-        // }))),
-		// /** 
-        //  * List of bulk actions for this table. 
-        //  */
-        // bulkActions: computed(() => table.value.actions.bulk.map((action) => ({
-        //     ...action,
-        //     // execute: () => executeBulkAction()
-        // }))),
-		// /** 
-        //  * List of page actions for this table. 
-        //  */
-        // pageActions: computed(() => table.value.actions.page.map((action) => ({
-        //     ...action,
-        //     execute: (data: object, options?: object) => {
-        //         if (! action.has_endpoint) return 
-
-        //         router[action.endpoint.method](action.endpoint.route, {
-        //             ...data,
-        //         },{
-        //             ...options
-        //         })
-        //     }
-        // }))),
         actions: useActions(table.value.actions),
 		/** 
          * Selects all records. 
@@ -122,18 +91,6 @@ export const useTable = (propName: string, refinementOptions: RefinementOptions)
          * Deselects selection for the given record. 
          */
         deselect: (row: any) => bulk.deselect(getRowKey(row)),
-		/**
-         *  Executes the given inline action for the given record. 
-         */
-        // executeInlineAction,
-        // /** 
-        //  * Executes the given bulk action 
-        //  */
-        // executeBulkAction,
-        // /** 
-        //  * Executes the given page action 
-        //  */
-        // executePageAction,
         /**
          * Unique identifier for columns on this table if provided
          */

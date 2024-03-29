@@ -162,7 +162,7 @@ export interface Table {
 
 /** Javascript API */
 export interface ActionablePageAction extends PageAction {
-    execute: () => void;
+    exec: (data: object, options: RouterOptions) => void;
 }
 
 export interface RefinementOptions {
@@ -189,36 +189,40 @@ export interface ActionableColumn extends Column {
     clear: () => void;
 }
 
-export interface ActionableRow extends Extend {
+export interface ActionableRow extends object {
     key: string;
-    select: () => void;
-    deselect: () => void;
-    toggle: () => void;
-    isSelected: ComputedRef<boolean>;
+    select?: () => void;
+    deselect?: () => void;
+    toggle?: () => void;
+    isSelected?: ComputedRef<boolean>;
+}
+
+export interface ActionablePreferenceColumn {
+    name: string
+    label: string
+    active: boolean
+    update: () => void
 }
 
 export interface UseTable {
-    rawCols: Column[]
-    cols: ActionableColumn[];
-    rows: ActionableRow[];
+    recordKey: string;
+    cols: ComputedRef<ActionableColumn[]>;
+    rows: ComputedRef<ActionableRow[]>;
     meta: ComputedRef<PaginatedMeta|CursorPaginatedMeta|UnpaginatedMeta>;
-    refinements: Refinements;
     actions: {
         inline: ComputedRef<InlineAction[]>;
         page: ComputedRef<ActionablePageAction[]>;
         bulk: ComputedRef<BulkAction[]>;
-        default?: InlineAction;
     },
-    selectAll: () => void;
-    deselectAll: () => void;
-    isSelected: (row: string) => boolean;
-    allSelected: () => boolean;
-    selection: ComputedRef<string[]>;
-    toggle: (row: string) => void;
-    select: (row: string) => void;
-    deselect: (row: string) => void;
-    recordKey: string;
-    show?: number
+    selectAll?: () => void;
+    deselectAll?: () => void;
+    isSelected?: (row: string) => boolean;
+    allSelected?: () => boolean;
+    selection?: ComputedRef<string[]>;
+    toggle?: (row: string) => void;
+    select?: (row: string) => void;
+    deselect?: (row: string) => void;
+    preferences?: ComputedRef<ActionablePreferenceColumn[]>;
 }
 
 export interface UseTableProps {
@@ -227,13 +231,8 @@ export interface UseTableProps {
     rows: Row[];
     meta: PaginatedMeta | CursorPaginatedMeta | UnpaginatedMeta;
     refinements: Refiners;
-    actions: {
-        inline: InlineAction[];
-        page: PageAction[];
-        bulk: BulkAction[];
-        default?: InlineAction;
-    }
-    show?: number
+    actions: Actions;
+    show?: number;
 }
 
 
@@ -247,9 +246,16 @@ export interface UseRefinement {
     clearQuery: () => void;
 }
 
-/** Misc */
+export interface UseActions {
+    inline: ComputedRef<InlineAction[]>;
+    bulk: ComputedRef<BulkAction[]>;
+    page: ComputedRef<ActionablePageAction[]>;
+}
 
+/** Misc */
 interface RouterOptions {
+    preserveScroll?: boolean;
+    preserveState?: boolean;
     onSuccess?: () => void;
     onError?: () => void;
     onFinish?: () => void;
