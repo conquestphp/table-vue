@@ -4,6 +4,7 @@ import { toRef, reactive, computed, onMounted, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
 import { watchPausable } from "@vueuse/core"
 import { emptyValue } from "./utils";
+import { useQuery } from "./use-query";
 
 const SORT_FIELD = 'sort';
 const ORDER_FIELD = 'order';
@@ -15,7 +16,8 @@ export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) 
     } = options
 
     const refiners = toRef(prop)
-   
+    const query = useQuery()
+
     const params: { [key: string]: any } = reactive({})
 
     const transformParams = () => {
