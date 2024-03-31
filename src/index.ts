@@ -14,9 +14,7 @@ export type {
     Sort,
     ActionableFilter,
     ActionableSort,
-    Action,
-    Refinements,
-    UseTableProps
+    Refiners,
 } from './types';
 
 export type { Selection } from './use-bulk';

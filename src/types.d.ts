@@ -225,25 +225,29 @@ export interface UseTable {
     preferences?: ComputedRef<ActionablePreferenceColumn[]>;
 }
 
-export interface UseTableProps {
-    recordKey: string;
-    cols: Column[];
-    rows: Row[];
-    meta: PaginatedMeta | CursorPaginatedMeta | UnpaginatedMeta;
-    refinements: Refiners;
-    actions: Actions;
-    show?: number;
-}
-
-
 export interface UseRefinement {
     params: any;
-    sorts: ActionableSort[];
-    filters: ActionableFilter[];
-    setQuery: (fieldQuery: string, value: any) => void;
-    updateQuery: () => void;
-    getQuery: () => any;
-    clearQuery: () => void;
+    sorts: ComputedRef<ActionableSort[]>;
+    filters: ComputedRef<ActionableFilter[]>;
+    update: () => void;
+    getSort: (name: string) => Sort|undefined;
+    getFilter: (name: string) => Sort|undefined;
+    reset: () => void;
+    currentSorts: () => Sort[];
+    currentFilters: () => Filter[];
+    isFiltering: () => boolean;
+    isSorting: () => boolean;
+    applyFilter: (name: string, value: any) => void;
+    applySort: (name: string, direction: string) => void;
+    clearFilters: () => void;
+    clearFilter: (name: string) => void;
+    clearSort: () => void;
+    clearSorts: () => void;
+    loopSort: (name: string, direction?: string) => void;
+    // setQuery: (fieldQuery: string, value: any) => void;
+    // updateQuery: () => void;
+    // getQuery: () => any;
+    // clearQuery: () => void;
 }
 
 export interface UseActions {

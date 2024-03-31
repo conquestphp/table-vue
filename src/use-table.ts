@@ -9,8 +9,7 @@ type RowIdentifier = string | number;
 export const useTable = <T extends object>(prop: Table, refinementOptions: RefinementOptions) => {
     const table = toRef(prop)
     const recordKey = table.value.recordKey
-    const hasBulkActions = table.value.actions.bulk.length > 0
-    const bulk = hasBulkActions ? useBulkSelect() : null
+    
     const refinements = useRefinements(prop.refinements, refinementOptions)
 
     const getRowKey = (row: T): RowIdentifier => {
@@ -23,6 +22,8 @@ export const useTable = <T extends object>(prop: Table, refinementOptions: Refin
 		return Reflect.get(row, recordKey) as any
 	}
 
+    const hasBulkActions = table.value.actions.bulk.length > 0
+    const bulk = hasBulkActions ? useBulkSelect() : null
     const bulkActions = hasBulkActions ? {
         /** 
          * Selects all records. 
@@ -58,13 +59,13 @@ export const useTable = <T extends object>(prop: Table, refinementOptions: Refin
         deselect: (row: T) => bulk?.deselect(getRowKey(row)),
     } : {}
 
-    const preferences = table.value.preference_cols ? {
+    const preferences = table.value.preference_cols !== undefined ? {
         preferences: computed(() => {
-            return table.value.preference_cols.map((col: PreferenceCol) => ({
+            return table.value.preference_cols !== undefined ? table.value.preference_cols.map((col: PreferenceCol) => ({
                 ...col,
                 set: (value: any) => refinements.set(col.key, value),
                 clear: () => refinements.clear(col.key)
-            }))
+            })) : null
         })
     } : {}
     

@@ -5,15 +5,7 @@ import { router } from "@inertiajs/vue3";
 export const useActions = (actions: Actions): UseActions => {
     return {
         inline: computed(() => actions.inline),
-            // actions.inline.map((action: InlineAction) => ({
-            //     ...action
-            // }))
-        // }),
         bulk: computed(() => actions.bulk),
-        //     actions.bulk.map((action: BulkAction) => ({
-        //         ...action
-        //     }))
-        // }),
         page: computed(() => actions.page.map((action: PageAction): ActionablePageAction => ({
             ...action,
             exec: (data, options) => {
