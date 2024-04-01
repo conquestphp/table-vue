@@ -6,7 +6,7 @@ import { useActions } from "./use-actions";
 
 type RowIdentifier = string | number;
 
-export const useTable = <T extends object>(prop: Table, refinementOptions: RefinementOptions) => {
+export const useTable = <T extends object>(prop: Table, refinementOptions: RefinementOptions = {}) => {
     const table = toRef(prop)
     const recordKey = table.value.recordKey
     
@@ -63,8 +63,8 @@ export const useTable = <T extends object>(prop: Table, refinementOptions: Refin
         preferences: computed(() => {
             return table.value.preference_cols !== undefined ? table.value.preference_cols.map((col: PreferenceCol) => ({
                 ...col,
-                set: (value: any) => refinements.set(col.key, value),
-                clear: () => refinements.clear(col.key)
+                set: (value: any) => refinements.add(col.name, value),
+                clear: () => refinements.clear(col.name)
             })) : null
         })
     } : {}
@@ -115,11 +115,11 @@ export const useTable = <T extends object>(prop: Table, refinementOptions: Refin
          */
         ...bulkActions,
         /**
-         * Columns with available preferences
+         * Columns with available preferences if enabled
          */
         ...preferences,
         /** 
-         * Filtering and sort options
+         * Filter and sort options
          */
         ...refinements,
         

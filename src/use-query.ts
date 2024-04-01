@@ -10,7 +10,7 @@ export interface UseQueryProps {
     [key: string]: any;
 }
 
-export const useQuery = (props?: UseQueryProps) => {
+export const useQuery = (props: UseQueryProps = {}) => {
     const {
         _url = location.origin + location.pathname,
         _watch = true,
@@ -46,7 +46,15 @@ export const useQuery = (props?: UseQueryProps) => {
     
     const set = (key: string, value: any) => params[key] = value  
 
-    const clear = (key: string) => params[key] = undefined
+    const add = (key: string, value: any) => {
+        if (Array.isArray(params[key])) {
+            params[key].push(value)
+        } else {
+            params[key] = [value]
+        }
+    }
+
+    const clear = (key: string) => params[key] = null
 
     const reset = () => Object.assign(params, get())
 
@@ -63,10 +71,11 @@ export const useQuery = (props?: UseQueryProps) => {
         params,
         pause,
         resume,
-        update,
-        set,
-        clear,
-        get,
         reset,
+        get,
+        set,
+        add,
+        update,
+        clear,
     }
 }

@@ -1,75 +1,21 @@
 import type { Refiners, Sort, Filter, ActionableFilter, ActionableSort, RefinementOptions } from "./types";
-import queryString from "query-string"
-import { toRef, reactive, computed, onMounted, nextTick } from "vue";
-import { router } from "@inertiajs/vue3";
-import { watchPausable } from "@vueuse/core"
-import { emptyValue } from "./utils";
+import { toRef, computed, onMounted, nextTick } from "vue";
 import { useQuery } from "./use-query";
 
 const SORT_FIELD = 'sort';
 const ORDER_FIELD = 'order';
 
-export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) => {
+export const useRefinements = (refinements: Refiners, options: RefinementOptions = {}) => {
     const { 
-        watch = true, 
-        transforms = {} 
+        watch = true,
+        // transforms = {} 
     } = options
 
-    const refiners = toRef(prop)
+    const refiners = toRef(refinements)
     const query = useQuery()
-
-    const params: { [key: string]: any } = reactive({})
-
-    const transformParams = () => {
-        let transformed: { [key: string]: any } = {}
-
-        /** Has to loop over params to remove empty values */
-        for (const key in params) {
-            if (emptyValue(params[key])) {
-                continue
-            } else if (key in transforms) {
-                transformed[key] = transforms[key](params[key])
-            } else {
-                transformed[key] = params[key]
-            }
-        }
-        return transformed
-    }
-
-    const update = () => {        
-        const url = queryString.stringifyUrl(
-            {
-                url: location.origin + location.pathname,
-                query: { ...transformParams(), 
-                    page: undefined // Reset page on query change
-                },
-            },
-            {
-                arrayFormat: "comma",
-            }
-        )
-
-        router.visit(url, {
-            preserveScroll: true,
-            preserveState: true,
-        })
-    }
-
-    const { pause, resume } = watchPausable(params, update)
     
-    // const sorts = computed(() => refiners.value.sorts.map((sort: Sort): ActionableSort => {
-    //     return {
-    //         ...sort,
-    //         action: () => {
-    //             applySort(sort.name, sort.direction)
-    //         },
-    //         clear: () => {
-    //             clearSort()
-    //         }
-    //     }
-    // }))
-    const sorts = computed(() => {
-        return Object.entries(refiners.value.sorts).reduce((result: { [key: string]: ActionableSort }, [key, sort]) => {
+    const sorts = computed(() => (
+        Object.entries(refiners.value.sorts).reduce((result: { [key: string]: ActionableSort }, [key, sort]) => {
             result[key] = {
                 ...sort,
                 action: () => {
@@ -80,11 +26,10 @@ export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) 
                 }
             };
             return result;
-        }, {});
-    });
+        }, {}))
+    );
 
-    const filters = computed(() => {
-        return Object.entries(refiners.value.filters).reduce((result: { [key: string]: ActionableFilter }, [key, filter]) => {
+    const filters = computed(() => (Object.entries(refiners.value.filters).reduce((result: { [key: string]: ActionableFilter }, [key, filter]) => {
             result[key] = {
                 ...filter,
                 action: (value: any) => {
@@ -95,54 +40,46 @@ export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) 
                 }
             };
             return result;
-        }, {});
-    });
+        }, {}))
+    );
 
-    const getSort = (name: string): Sort|undefined => {
-        return sorts.value[name]
-    }
+    const getSort = (name: string): Sort|undefined => sorts.value[name]
 
-    const getFilter = (name: string): Filter|undefined => {
-        return filters.value[name]
-    }
+    const getFilter = (name: string): Filter|undefined => filters.value[name]
 
     const reset = (): void => {
         clearSorts()
         clearFilters()
     }
 
-    const currentSorts = (): Sort[] => {
-        return Object.values(sorts.value).filter(({ active }) => active)
-    }
+    const currentSorts = (): Sort[] => Object.values(sorts.value).filter(({ active }) => active)
 
     const clearSorts = () => clearSort()
 
     const clearSort = (): void => {
-        params[SORT_FIELD] = null
-        params[ORDER_FIELD] = null
+        query.clear(SORT_FIELD)
+        query.clear(ORDER_FIELD)
     }
 
-    const applySort = (name: string, direction: string):void => {
-        params[SORT_FIELD] = name
-        params[ORDER_FIELD] = direction
+    const applySort = (name: string, direction?: string):void => {
+        query.set(SORT_FIELD, name)
+        query.set(ORDER_FIELD, direction)
     }
 
     const loopSort = (name: string, direction?: string): void => {
-        if (!direction) {
-            clearSort()
-        } else {
-            applySort(name, direction)
-        }
+        if (!direction) clearSort()
+        else applySort(name, direction)
     }
 
     const currentFilters = (): Filter[] => Object.values(filters.value).filter(({ active }) => active)
     
-    const clearFilters = () => Object.keys(filters.value).forEach((filter) => clearFilter(filter))
+    const clearFilters = () => Object.keys(filters.value).forEach((filter) => clear(filter))
 
-    const clearFilter = (name: string): null => params[name] = null
+    const clearFilter = (name: string): null => clear(name)
     
+    const clear = (name: string): null => query.clear(name)
 
-    const applyFilter = (name: string, value: any): null => params[name] = value
+    const applyFilter = (name: string, value: any): null => query.set(name, value)
 
     const isSorting = (name?: string): boolean => {
         if (name) return currentSorts().some(({ active }) => active)
@@ -155,34 +92,29 @@ export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) 
     }
 
     onMounted(async () => {
-        pause()
+        query.pause()
         await nextTick()
 
         if (Object.values(sorts).length > 0) {
-            params[SORT_FIELD] = null
-            params[ORDER_FIELD] = null
+            query.set(SORT_FIELD, null)
+            query.set(ORDER_FIELD, null)
         }
 
         Object.values(filters).forEach((filter: Filter) => {
-            params[filter.name] = null
+            query.set(filter.name, null)
         })
 
-        const query = queryString.parse(location.search, { arrayFormat: 'comma' })
+        // Worried about onMounted race conditions
 
-        Object.keys(query).forEach((key) => {
-            if (key in params) {
-                params[key] = query[key]
-            }
-        })
         await nextTick()
-        if (watch) resume()
+        if (watch) query.resume()
     })
 
     return {
         /**
 		 * Query param state for direct manipulation
 		 */
-        params,
+        params: query.params,
         /**
 		 * Available sorts
 		 */
@@ -194,7 +126,7 @@ export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) 
         /**
          * Execute router reload with new params
          */
-        update,
+        update: query.update,
         /**
          * Get the filter by name
          */
@@ -251,5 +183,17 @@ export const useRefinements = (prop: Refiners, options: RefinementOptions = {}) 
          * Loop through state machine for sorting
          */
         loopSort,
+        /**
+         * Generic clear for any param
+         */
+        clear: query.clear,
+        /**
+         * Generic set for any param
+         */
+        set: query.set,
+        /**
+         * Settter which handles array parameters
+         */
+        add: query.add,
     }
 }
