@@ -240,7 +240,7 @@ export interface UseRefinements {
     currentFilters: () => Filter[];
     isFiltering: () => boolean;
     isSorting: () => boolean;
-    applyFilter: (name: string, value: any) => void;
+    applyFilter: (name: string, value: any, type?: string|null) => void;
     applySort: (name: string, direction: string) => void;
     clearFilters: () => void;
     clearFilter: (name: string) => void;

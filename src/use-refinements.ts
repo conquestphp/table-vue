@@ -41,7 +41,7 @@ export const useRefinements = (name: string, props?: object, options: Refinement
             result[key] = {
                 ...filter,
                 action: (value: any) => {
-                    applyFilter(filter.name, value);
+                    applyFilter(filter.name, value, filter.type);
                 },
                 clear: () => {
                     clearFilter(filter.name);
@@ -87,7 +87,9 @@ export const useRefinements = (name: string, props?: object, options: Refinement
     
     const clear = (name: string): null => query.clear(name)
 
-    const applyFilter = (name: string, value: any): null => query.set(name, value)
+    const applyFilter = (name: string, value: any, type?: string|null): void => {
+        type === 'select' ? query.add(name, value) : query.set(name, value)
+    }
 
     const isSorting = (name?: string): boolean => {
         if (name) return currentSorts().some(({ active }) => active)
