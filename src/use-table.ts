@@ -1,4 +1,4 @@
-import type { RefinementOptions, Column, ActionableColumn, PreferenceCol, Table } from "./types";
+import type { RefinementOptions, Column, ActionableColumn, PreferenceColumn, Table } from "./types";
 import { useRefinements } from "./use-refinements";
 import { useBulkSelect } from "./use-bulk";
 import { reactive, toRef, computed } from "vue";
@@ -7,12 +7,12 @@ import { getProp } from "./utils";
 
 type RowIdentifier = string | number;
 
-export const useTable = <T extends object>(name: string, props?: object, refinementOptions: RefinementOptions = {}) => {
+export const useTable = <T extends object>(name: string, props?: object, options: RefinementOptions = {}) => {
     const table = computed(() => getProp(name, props) as Table)
 
     const recordKey = table.value.recordKey
     
-    const refinements = useRefinements('refinements', table.value, refinementOptions)
+    const refinements = useRefinements('refinements', table.value, options)
 
     const getRowKey = (row: T): RowIdentifier => {
 		if (typeof row !== 'object') return row		
@@ -28,6 +28,14 @@ export const useTable = <T extends object>(name: string, props?: object, refinem
     const bulk = hasBulkActions ? useBulkSelect() : null
     const bulkActions = hasBulkActions ? {
         /** 
+         * Whether all records are selected. 
+         */
+        allSelected: bulk?.allSelected,
+        /** 
+         * The current record selection. 
+         */
+        selection: bulk ? toRef(bulk, 'selection') : null,
+        /** 
          * Selects all records. 
          */
         selectAll: bulk?.selectAll,
@@ -35,35 +43,27 @@ export const useTable = <T extends object>(name: string, props?: object, refinem
          * Deselects all records. 
          */
         deselectAll: bulk?.deselectAll,
+        /** 
+         * Selects selection for the given record. 
+         */
+        select: (row: T) => bulk?.select(getRowKey(row)),
+        /** 
+         * Deselects selection for the given record. 
+         */
+        deselect: (row: T) => bulk?.deselect(getRowKey(row)),
 		/** 
          * Checks if the given record is selected. 
          */
-        isSelected: (row: T) => bulk?.selected(getRowKey(row)),
-		/** 
-         * Whether all records are selected. 
-         */
-        allSelected: bulk?.allSelected,
-		/** 
-         * The current record selection. 
-         */
-        selection: bulk ? toRef(bulk, 'selection') : null,
+        selected: (row: T) => bulk?.selected(getRowKey(row)),
         /** 
          * Toggles selection for the given record. 
          */
         toggle: (row: T) => bulk?.toggle(getRowKey(row)),
-		/** 
-         * Selects selection for the given record. 
-         */
-        select: (row: T) => bulk?.select(getRowKey(row)),
-		/** 
-         * Deselects selection for the given record. 
-         */
-        deselect: (row: T) => bulk?.deselect(getRowKey(row)),
     } : {}
 
     const preferences = table.value.preference_cols !== undefined ? {
         preferences: computed(() => {
-            return table.value.preference_cols !== undefined ? table.value.preference_cols.map((col: PreferenceCol) => ({
+            return table.value.preference_cols !== undefined ? table.value.preference_cols.map((col: PreferenceColumn) => ({
                 ...col,
                 set: (value: any) => refinements.add(col.name, value),
                 clear: () => refinements.clear(col.name)
@@ -83,12 +83,11 @@ export const useTable = <T extends object>(name: string, props?: object, refinem
         cols: computed(() => {
             return table.value.cols.reduce((acc: ActionableColumn[], col: Column) => {
                 if (!col.hidden) { // Filter condition
-                    const newCol: ActionableColumn = {
+                    acc.push({
                         ...col,
                         sort: col.has_sort ? () => refinements.loopSort(col.sort_field, col.next_direction) : () => {},
-                        clear: () => refinements.clearSort()
-                    };
-                    acc.push(newCol);
+                        clear: col.has_sort ? () => refinements.clearSort() : () => {}
+                    });
                 }
                 return acc;
             }, []);
@@ -99,10 +98,13 @@ export const useTable = <T extends object>(name: string, props?: object, refinem
         rows: computed(() => table.value.rows.map((row: T) => ({
             ...row,
             key: getRowKey(row),
-            select: hasBulkActions ? () => bulk?.select(getRowKey(row)) : () => {},
-            deselect: hasBulkActions ? () => bulk?.deselect(getRowKey(row)) : () => {},
-            toggle: () => hasBulkActions ? bulk?.toggle(getRowKey(row)) : () => {},
-            isSelected: computed(() => hasBulkActions ? bulk?.selected(getRowKey(row)) : false),
+            ...(hasBulkActions ? { 
+                select: () => bulk?.select(getRowKey(row)),
+                deselect: () => bulk?.deselect(getRowKey(row)),
+                toggle: () => bulk?.toggle(getRowKey(row)),
+                isSelected: computed(() => bulk?.selected(getRowKey(row))),
+                selected: bulk?.selected(getRowKey(row)) 
+            } : {}),
         }))),
         /** 
          * Pagination data for the table 
@@ -123,8 +125,6 @@ export const useTable = <T extends object>(name: string, props?: object, refinem
         /** 
          * Filter and sort options
          */
-        ...refinements,
-        
-        
+        ...refinements,       
     })
 }

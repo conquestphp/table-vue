@@ -1,11 +1,11 @@
 import { reactive, computed } from 'vue'
 
 export interface Selection<T = any> {
-    /** Whether all records are selected. */
+    /** Whether all rows are selected. */
 	all: boolean
-	/** Included records. */
+	/** Included rows. */
 	only: Set<T>
-	/** Excluded records. */
+	/** Excluded rows. */
 	except: Set<T>
 }
 

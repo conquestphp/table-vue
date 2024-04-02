@@ -1,32 +1,37 @@
 import { watchPausable } from "@vueuse/core"
 import queryString from "query-string"
 import { router } from "@inertiajs/vue3"
-
 import { onMounted, reactive, nextTick } from "vue"
+import { emptyValue } from "./utils"
+import type { UseQueryProps, UseQuery } from "./types"
 
-export interface UseQueryProps {
-    _url?: string;
-    _watch?: boolean;
-    _auto?: boolean;
-    [key: string]: any;
-}
-
-export const useQuery = (props: UseQueryProps = {}) => {
+export const useQuery = (props: UseQueryProps = {}): UseQuery => {
     const {
-        _url = location.origin + location.pathname,
+        _url = location.href,
         _watch = true,
         _auto = true,
+        _only = [],
+        transforms = {},
         ...options
     } = props
 
     const params: { [key: string]: any } = reactive({})
 
-    const _update = (params: object, url: string) => {        
+    const urlParams = () => {
+        let transformed: { [key: string]: any } = {}
+        for (const key in params) {
+            if (key in transforms) transformed[key] = transforms[key](params[key])
+            else if (emptyValue(params[key])) continue
+            else transformed[key] = params[key]
+        }
+        return transformed
+    }
+
+    const _update = (params: object, url: string) => {
         const route = queryString.stringifyUrl(
             {
                 url: url,
-                query: { ...params, 
-                    page: undefined },
+                query: { ...params, page: undefined },
             },
             {
                 arrayFormat: "comma",
@@ -34,6 +39,7 @@ export const useQuery = (props: UseQueryProps = {}) => {
         )
 
         router.visit(route, {
+            only: _only,
             preserveScroll: true,
             preserveState: true,
         })
@@ -43,17 +49,13 @@ export const useQuery = (props: UseQueryProps = {}) => {
         arrayFormat: "comma",
     })
 
-
-    const update = () => _update(params, _url)
+    const update = () => _update(urlParams(), _url)
     
     const set = (key: string, value: any) => params[key] = value  
 
     const add = (key: string, value: any) => {
-        if (Array.isArray(params[key])) {
-            params[key].push(value)
-        } else {
-            params[key] = [value]
-        }
+        if (Array.isArray(params[key])) params[key].push(value)
+        else params[key] = [value]
     }
 
     const clear = (key: string) => params[key] = null
@@ -62,17 +64,19 @@ export const useQuery = (props: UseQueryProps = {}) => {
 
     const { pause, resume } = watchPausable(params, update)
 
-    onMounted(async () => {
+    onMounted(() => {
         if (_auto) {
             pause()
             Object.assign(params, get(), options)
-            await nextTick()
-            if (_watch) resume()
+            nextTick(() => {
+                if (_watch) resume()
+            })
         }
     })
 
     return {
         params,
+        urlParams,
         pause,
         resume,
         reset,

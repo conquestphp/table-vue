@@ -87,7 +87,7 @@ interface PagingOptions {
     term: string
 }
 
-interface PreferenceCol {
+export interface PreferenceColumn {
     name: string
     label: string
     active: boolean
@@ -157,19 +157,12 @@ export interface Table {
     actions: Actions;
     recordKey: string;
     paging_options?: PagingOptions
-    preference_cols?: PreferenceCol[]
+    preference_cols?: PreferenceColumn[]
 }
 
 /** Javascript API */
 export interface ActionablePageAction extends PageAction {
     exec: (data: object, options: RouterOptions) => void;
-}
-
-export interface RefinementOptions {
-    watch?: boolean;
-    transforms?: {
-        [key: string]: (value: any) => any;
-    }
 }
 
 interface Clears {
@@ -185,8 +178,8 @@ export interface ActionableSort extends Sort, Clears {
 }
 
 export interface ActionableColumn extends Column {
-    sort: () => void;
-    clear: () => void;
+    sort?: () => void;
+    clear?: () => void;
 }
 
 export interface ActionableRow extends object {
@@ -195,43 +188,53 @@ export interface ActionableRow extends object {
     deselect?: () => void;
     toggle?: () => void;
     isSelected?: ComputedRef<boolean>;
+    selected?: boolean;
 }
 
-export interface ActionablePreferenceColumn {
-    name: string
-    label: string
-    active: boolean
+export interface ActionablePreferenceColumn extends PreferenceColumn{
     update: () => void
 }
 
-export interface UseTable {
+/** Composable options and props */
+export interface UseQueryProps {
+    _url?: string;
+    _watch?: boolean;
+    _auto?: boolean;
+    transforms?: Transforms
+    [key: string]: any;
+}
+
+export interface RefinementOptions {
+    watch?: boolean;
+    transforms?: Transforms
+    only?: string[]
+}
+
+/** Composable returns */
+interface UseTableBase extends UseRefinements {
     recordKey: string;
     cols: ComputedRef<ActionableColumn[]>;
     rows: ComputedRef<ActionableRow[]>;
     meta: ComputedRef<PaginatedMeta|CursorPaginatedMeta|UnpaginatedMeta>;
-    actions: {
-        inline: ComputedRef<InlineAction[]>;
-        page: ComputedRef<ActionablePageAction[]>;
-        bulk: ComputedRef<BulkAction[]>;
-    },
-    selectAll?: () => void;
-    deselectAll?: () => void;
-    isSelected?: (row: string) => boolean;
-    allSelected?: () => boolean;
-    selection?: ComputedRef<string[]>;
-    toggle?: (row: string) => void;
-    select?: (row: string) => void;
-    deselect?: (row: string) => void;
+    actions: UseActions,
+    // selectAll?: () => void;
+    // deselectAll?: () => void;
+    // isSelected?: (row: string) => boolean;
+    // allSelected?: () => boolean;
+    // selection?: ComputedRef<string[]>;
+    // toggle?: (row: string) => void;
+    // select?: (row: string) => void;
+    // deselect?: (row: string) => void;
     preferences?: ComputedRef<ActionablePreferenceColumn[]>;
 }
 
-export interface UseRefinement {
-    params: any;
-    sorts: ComputedRef<ActionableSort[]>;
-    filters: ComputedRef<ActionableFilter[]>;
+export interface UseRefinements {
+    params: { [key: string]: any };
+    sorts: ComputedRef<{ [key: string] : ActionableSort }>;
+    filters: ComputedRef<{ [key: string] : ActionableFilter }>;
     update: () => void;
     getSort: (name: string) => Sort|undefined;
-    getFilter: (name: string) => Sort|undefined;
+    getFilter: (name: string) => Filter|undefined;
     reset: () => void;
     currentSorts: () => Sort[];
     currentFilters: () => Filter[];
@@ -241,13 +244,12 @@ export interface UseRefinement {
     applySort: (name: string, direction: string) => void;
     clearFilters: () => void;
     clearFilter: (name: string) => void;
-    clearSort: () => void;
     clearSorts: () => void;
+    clearSort: () => void;
     loopSort: (name: string, direction?: string) => void;
-    // setQuery: (fieldQuery: string, value: any) => void;
-    // updateQuery: () => void;
-    // getQuery: () => any;
-    // clearQuery: () => void;
+    clear: (key: string) => void;
+    set: (key: string, value: any) => null;
+    add: (key: string, value: any) => void;
 }
 
 export interface UseActions {
@@ -255,6 +257,42 @@ export interface UseActions {
     bulk: ComputedRef<BulkAction[]>;
     page: ComputedRef<ActionablePageAction[]>;
 }
+
+export interface UseQuery {
+    params: { [key: string]: any };
+    urlParams: () => { [key: string]: any };
+    pause: () => void;
+    resume: () => void;
+    reset: () => void;
+    get: () => { [key: string]: any };
+    set: (key: string, value: any) => null;
+    add: (key: string, value: any) => void;
+    update: () => void;
+    clear: (key: string) => null;
+}
+
+
+export interface Selection<T = any> {
+    /** Whether all records are selected. */
+	all: boolean
+	/** Included records. */
+	only: Set<T>
+	/** Excluded records. */
+	except: Set<T>
+}
+
+export interface UseBulkSelect<T = any> {
+    allSelected: boolean;
+    selection: Selection;
+    selectAll: () => void;
+    deselectAll: () => void;
+    select: (...rows: T[]) => void;
+    deselect: (...rows: T[]) => void;
+    selected: (row: T) => boolean;
+    toggle: (...rows: T[]) => void;   
+}
+
+export type UseTable = UseTableBase & (UseTableBase['actions']['bulk']['value']['length'] extends 1 ? {} : UseBulkSelect);
 
 /** Misc */
 interface RouterOptions {
@@ -264,3 +302,5 @@ interface RouterOptions {
     onError?: () => void;
     onFinish?: () => void;
 }
+
+type Transforms = { [key: string]: (value: any) => any }

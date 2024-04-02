@@ -5,18 +5,49 @@ export { useQuery } from './use-query';
 export { useActions } from './use-actions';
 
 export type { 
-    UseRefinement, 
-    RefinementOptions,
+    /** Refinement types */
+    Refiners,
+    Refinement,
+    BaseFilter,
+    Filter,
+    BaseSort,
+    ToggleSort,
+    Sort,
+    Option,
+
+    /** Action types */
+    Actions,
+    BaseAction,
+    BulkAction,
+    InlineAction,
+    PageAction,
+
+    /** Table meta types */
     UnpaginatedMeta,
     CursorPaginatedMeta,
     PaginatedMeta,
+
+    /** Column and table definitions */
+    PreferenceColumn,
     Column,
-    Refinement,
-    Filter,
-    Sort,
+    Table,
+
+    /** Javascript functional types */
     ActionableFilter,
     ActionableSort,
-    Refiners,
-} from './types';
+    ActionableColumn,
+    ActionableRow,
+    ActionablePreferenceColumn,
 
-export type { Selection } from './use-bulk';
+    /** Composable helpers and options */
+    RefinementOptions,
+    UseQueryProps,
+    Selection,
+
+    /** Composable return types */
+    UseRefinements,
+    UseActions,
+    UseQuery,
+    UseBulkSelect,
+    UseTable
+} from './types';

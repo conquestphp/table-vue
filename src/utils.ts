@@ -12,5 +12,3 @@ export const getProp = (key: string, props?: object) => {
 }    
 
 export const emptyValue = (value: any) => value === '' || value === null || value === undefined || value?.length === 0
-
-
