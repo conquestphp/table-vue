@@ -3,14 +3,16 @@ import { useRefinements } from "./use-refinements";
 import { useBulkSelect } from "./use-bulk";
 import { reactive, toRef, computed } from "vue";
 import { useActions } from "./use-actions";
+import { getProp } from "./utils";
 
 type RowIdentifier = string | number;
 
-export const useTable = <T extends object>(prop: Table, refinementOptions: RefinementOptions = {}) => {
-    const table = toRef(prop)
+export const useTable = <T extends object>(name: string, props?: object, refinementOptions: RefinementOptions = {}) => {
+    const table = computed(() => getProp(name, props) as Table)
+
     const recordKey = table.value.recordKey
     
-    const refinements = useRefinements(prop.refinements, refinementOptions)
+    const refinements = useRefinements('refinements', table.value, refinementOptions)
 
     const getRowKey = (row: T): RowIdentifier => {
 		if (typeof row !== 'object') return row		

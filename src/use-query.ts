@@ -7,6 +7,7 @@ import { onMounted, reactive, nextTick } from "vue"
 export interface UseQueryProps {
     _url?: string;
     _watch?: boolean;
+    _auto?: boolean;
     [key: string]: any;
 }
 
@@ -14,6 +15,7 @@ export const useQuery = (props: UseQueryProps = {}) => {
     const {
         _url = location.origin + location.pathname,
         _watch = true,
+        _auto = true,
         ...options
     } = props
 
@@ -61,10 +63,12 @@ export const useQuery = (props: UseQueryProps = {}) => {
     const { pause, resume } = watchPausable(params, update)
 
     onMounted(async () => {
-        pause()
-        Object.assign(params, get(), options)
-        await nextTick()
-        if (_watch) resume()
+        if (_auto) {
+            pause()
+            Object.assign(params, get(), options)
+            await nextTick()
+            if (_watch) resume()
+        }
     })
 
     return {

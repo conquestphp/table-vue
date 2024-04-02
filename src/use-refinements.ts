@@ -1,18 +1,26 @@
 import type { Refiners, Sort, Filter, ActionableFilter, ActionableSort, RefinementOptions } from "./types";
-import { toRef, computed, onMounted, nextTick } from "vue";
+import { computed, onMounted, nextTick } from "vue";
 import { useQuery } from "./use-query";
+import { getProp } from "./utils";
+
 
 const SORT_FIELD = 'sort';
 const ORDER_FIELD = 'order';
 
-export const useRefinements = (refinements: Refiners, options: RefinementOptions = {}) => {
+export const useRefinements = (name: string, props?: object, options: RefinementOptions = {}) => {
     const { 
         watch = true,
         // transforms = {} 
     } = options
 
-    const refiners = toRef(refinements)
-    const query = useQuery()
+    const refiners = computed(() => getProp(name, props) as Refiners)
+
+    // const refiners = getPropAsRef(name, props) as Ref<Refiners>
+
+    const query = useQuery({
+        _auto: false,
+        _watch: watch
+    })
     
     const sorts = computed(() => (
         Object.entries(refiners.value.sorts).reduce((result: { [key: string]: ActionableSort }, [key, sort]) => {
@@ -93,19 +101,13 @@ export const useRefinements = (refinements: Refiners, options: RefinementOptions
 
     onMounted(async () => {
         query.pause()
-        await nextTick()
-
-        if (Object.values(sorts).length > 0) {
+        if (Object.values(sorts.value).length > 0) {
             query.set(SORT_FIELD, null)
             query.set(ORDER_FIELD, null)
         }
-
-        Object.values(filters).forEach((filter: Filter) => {
-            query.set(filter.name, null)
-        })
-
-        // Worried about onMounted race conditions
-
+        Object.values(filters.value).forEach((filter: Filter) => query.set(filter.name, null))
+        const searchParams = query.get()
+        Object.keys(searchParams).forEach((key) => key in query.params ? query.set(key, searchParams[key]) : null)
         await nextTick()
         if (watch) query.resume()
     })
