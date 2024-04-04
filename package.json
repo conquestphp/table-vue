@@ -1,6 +1,6 @@
 {
 	"name": "vanguard-client",
-	"version": "0.3.0",
+	"version": "0.3.2",
 	"description": "A Vue 3 + Inertia plugin composable for handler tables and refiners.",
 	"keywords": [
 		"laravel",
