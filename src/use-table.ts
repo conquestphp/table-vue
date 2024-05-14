@@ -1,4 +1,4 @@
-import type { RefinementOptions, Column, ActionableColumn, PreferenceColumn, Table } from "./types";
+import type { RefinementOptions, Column, ActionableColumn, PreferenceColumn, Table, PagingOption } from "./types";
 import { useRefinements } from "./use-refinements";
 import { useBulkSelect } from "./use-bulk";
 import { reactive, toRef, computed } from "vue";
@@ -61,17 +61,26 @@ export const useTable = <T extends object>(name: string, props?: object, options
         toggle: (row: T) => bulk?.toggle(getRowKey(row)),
     } : {}
 
+    const paging = table.value.paging_options !== undefined ? {
+        counts: computed(() => {
+            return table.value.paging_options!.options.map((option: PagingOption) => ({
+                ...option,
+                set: (value: any) => refinements.add(table.value.paging_options!.key, value),
+                clear: () => refinements.clear(table.value.paging_options!.key)
+            }))
+        })
+    } : {}
+
     const preferences = table.value.preference_cols !== undefined ? {
         preferences: computed(() => {
-            return table.value.preference_cols !== undefined ? table.value.preference_cols.map((col: PreferenceColumn) => ({
+            return table.value.preference_cols!.map((col: PreferenceColumn) => ({
                 ...col,
                 set: (value: any) => refinements.add(col.name, value),
                 clear: () => refinements.clear(col.name)
-            })) : null
+            }))
         })
     } : {}
     
-
     return reactive({
         /**
          * Unique identifier for columns on this table if provided
@@ -125,6 +134,10 @@ export const useTable = <T extends object>(name: string, props?: object, options
         /** 
          * Filter and sort options
          */
-        ...refinements,       
+        ...refinements,
+        /**
+         * Paging options
+         */
+        ...paging
     })
 }

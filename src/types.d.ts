@@ -84,7 +84,7 @@ interface PagingOption {
 
 interface PagingOptions {
     options: PagingOption[]
-    term: string
+    key: string
 }
 
 export interface PreferenceColumn {
